@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Audio AI Model</title>
+</head>
+<body>
+  <h2>Audio Classifier</h2>
+  <button onclick="init()">Start</button>
+  <p id="label">Waiting...</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/audio@latest"></script>
+
+  <script>
+    let model, recognizer;
+
+    async function init() {
+      const URL = "./model/"; // folder where your model files are
+
+      recognizer = await tmAudio.create(URL + "model.json", URL + "metadata.json");
+      await recognizer.ensureModelLoaded();
+
+      recognizer.listen(result => {
+        const scores = result.scores;
+        const labels = recognizer.wordLabels();
+
+        let max = 0;
+        let index = 0;
+
+        for (let i = 0; i < scores.length; i++) {
+          if (scores[i] > max) {
+            max = scores[i];
+            index = i;
+          }
+        }
+
+        document.getElementById("label").innerText =
+          labels[index] + " (" + (max * 100).toFixed(2) + "%)";
+      }, { probabilityThreshold: 0.75 });
+    }
+  </script>
+</body>
+</html>
